@@ -9,6 +9,8 @@ import 'widgets/default_page_controller.dart';
 import 'providers/thermostat_provider.dart';
 import 'providers/settings_provider.dart';
 import 'providers/schedule_provider.dart';
+import 'providers/weather_provider.dart';
+import 'screens/settings_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -28,6 +30,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => ThermostatProvider()),
         ChangeNotifierProvider(create: (_) => SettingsProvider()),
         ChangeNotifierProvider(create: (_) => ScheduleProvider()),
+        ChangeNotifierProvider(create: (_) => WeatherProvider()),
       ],
       child: Consumer<SettingsProvider>(
         builder: (context, settings, _) {
@@ -37,14 +40,37 @@ class MyApp extends StatelessWidget {
               useMaterial3: true,
               colorScheme: ColorScheme.fromSeed(
                 seedColor: Colors.blue,
-                brightness: settings.theme == 'dark' 
-                    ? Brightness.dark 
-                    : Brightness.light,
+                brightness: Brightness.light,
               ),
               textTheme: GoogleFonts.interTextTheme(
                 Theme.of(context).textTheme,
               ),
             ),
+            darkTheme: ThemeData(
+               useMaterial3: true,
+               colorScheme: ColorScheme.fromSeed(
+                 seedColor: Colors.blue,
+                 brightness: Brightness.dark,
+                 surface: const Color(0xFF1E1E1E),
+                 onSurface: Colors.white,
+                 background: const Color(0xFF121212),
+                 onBackground: Colors.white,
+                 primary: Colors.lightBlueAccent[400],
+                 onPrimary: Colors.white,
+                 secondary: Colors.cyanAccent[200],
+                 onSecondary: Colors.white,
+                 error: Colors.redAccent,
+                 onError: Colors.white,
+                 outline: Colors.grey[700],
+               ),
+              textTheme: GoogleFonts.interTextTheme(
+                Theme.of(context).textTheme,
+              ).apply(
+                 bodyColor: Colors.white,
+                 displayColor: Colors.white,
+              ),
+            ),
+            themeMode: settings.theme == 'dark' ? ThemeMode.dark : ThemeMode.light,
             home: DefaultPageController(
               controller: PageController(),
               child: PageView(
@@ -54,6 +80,9 @@ class MyApp extends StatelessWidget {
                 ],
               ),
             ),
+            routes: {
+              '/settings': (context) => const SettingsScreen(),
+            },
           );
         },
       ),

@@ -23,10 +23,7 @@ class DefaultFirebaseOptions {
       case TargetPlatform.android:
         return android;
       case TargetPlatform.iOS:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for ios - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+         return ios;
       case TargetPlatform.macOS:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for macos - '
@@ -76,5 +73,15 @@ class DefaultFirebaseOptions {
     databaseURL: 'https://termometer-4b9d6-default-rtdb.europe-west1.firebasedatabase.app',
     storageBucket: 'termometer-4b9d6.firebasestorage.app',
   );
+
+  static const FirebaseOptions ios = FirebaseOptions(
+    apiKey: 'AIzaSyDqaqVa_2VJ9tzJ5qK9lKU1RXwdrAIufXs',
+    appId: '1:146412174490:ios:ed6799eaf94672ed98f323',
+    messagingSenderId: '146412174490',
+    projectId: 'termometer-4b9d6',
+    databaseURL: 'https://termometer-4b9d6-default-rtdb.europe-west1.firebasedatabase.app',
+    storageBucket: 'termometer-4b9d6.appspot.com',
+    iosBundleId: 'com.example.termostatApp',
+);
 
 }

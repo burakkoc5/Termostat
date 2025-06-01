@@ -33,7 +33,7 @@ class TemperatureDisplay extends StatelessWidget {
               'Current Temperature',
               style: theme.textTheme.titleMedium,
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
             Text(
               _formatTemperature(currentTemperature),
               style: theme.textTheme.displayLarge?.copyWith(
@@ -42,19 +42,21 @@ class TemperatureDisplay extends StatelessWidget {
             ).animate()
               .fadeIn(duration: 600.ms)
               .scale(delay: 200.ms),
-            const SizedBox(height: 32),
+            const SizedBox(height: 24),
             Text(
               'Target Temperature',
               style: theme.textTheme.titleMedium,
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 IconButton(
                   icon: const Icon(Icons.remove_circle_outline),
                   onPressed: () {
-                    onTemperatureChanged(targetTemperature - 0.5);
+                    if (targetTemperature > 10.0) {
+                      onTemperatureChanged(targetTemperature - 0.5);
+                    }
                   },
                 ),
                 Text(
@@ -68,18 +70,20 @@ class TemperatureDisplay extends StatelessWidget {
                 IconButton(
                   icon: const Icon(Icons.add_circle_outline),
                   onPressed: () {
-                    onTemperatureChanged(targetTemperature + 0.5);
+                    if (targetTemperature < 30.0) {
+                      onTemperatureChanged(targetTemperature + 0.5);
+                    }
                   },
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 8),
             Slider(
               value: targetTemperature,
-              min: useCelsius ? 10.0 : 50.0,
-              max: useCelsius ? 30.0 : 86.0,
+              min: 10.0,
+              max: 30.0,
               divisions: 40,
-              label: _formatTemperature(targetTemperature),
+              label: targetTemperature.round().toString(),
               onChanged: onTemperatureChanged,
             ),
           ],

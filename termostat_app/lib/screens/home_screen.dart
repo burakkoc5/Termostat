@@ -9,6 +9,8 @@ import '../widgets/mode_selector.dart';
 import '../widgets/schedule_card.dart';
 import '../widgets/weather_card.dart';
 import '../widgets/default_page_controller.dart';
+import './schedule_list_screen.dart';
+import './thermostat_log_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -18,6 +20,8 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  final PageController _pageController = PageController(initialPage: 1);
+
   @override
   void initState() {
     super.initState();
@@ -31,11 +35,16 @@ class _HomeScreenState extends State<HomeScreen> {
     await thermostat.initializeThermostat('device1');
     thermostat.startListening();
     await schedule.loadSchedules();
+    if (!mounted) return;
+    if (!mounted) return;
+    schedule.startScheduleChecker(thermostat);
   }
 
   @override
   void dispose() {
     Provider.of<ThermostatProvider>(context, listen: false).stopListening();
+    Provider.of<ScheduleProvider>(context, listen: false).stopScheduleChecker();
+    _pageController.dispose();
     super.dispose();
   }
 
@@ -48,51 +57,67 @@ class _HomeScreenState extends State<HomeScreen> {
           IconButton(
             icon: const Icon(Icons.settings),
             onPressed: () {
-              // TODO: Navigate to settings screen
+              // Navigate to the SettingsScreen
+              Navigator.pushNamed(context, '/settings');
             },
           ),
         ],
       ),
-      body: Consumer2<ThermostatProvider, SettingsProvider>(
-        builder: (context, thermostat, settings, _) {
-          if (thermostat.isLoading || settings.isLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
+      body: PageView(
+        controller: _pageController,
+        children: [
+          const ThermostatLogScreen(),
+          SingleChildScrollView(
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 0.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Consumer2<ThermostatProvider, SettingsProvider>(
+                    builder: (context, thermostat, settings, _) {
+                      if (thermostat.isLoading || settings.isLoading) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
 
-          if (thermostat.error != null) {
-            return Center(child: Text('Error: ${thermostat.error}'));
-          }
+                      if (thermostat.error != null) {
+                        return Center(child: Text('Error: ${thermostat.error}'));
+                      }
 
-          if (settings.error != null) {
-            return Center(child: Text('Error: ${settings.error}'));
-          }
+                      if (settings.error != null) {
+                        return Center(child: Text('Error: ${settings.error}'));
+                      }
 
-          if (thermostat.thermostat == null) {
-            return const Center(child: Text('No thermostat connected'));
-          }
+                      if (thermostat.thermostat == null) {
+                        return const Center(child: Text('No thermostat connected'));
+                      }
 
-          return Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                TemperatureDisplay(
-                  currentTemperature: thermostat.thermostat!.currentTemperature,
-                  targetTemperature: thermostat.thermostat!.targetTemperature,
-                  onTemperatureChanged: thermostat.updateTemperature,
-                  useCelsius: true,
-                ),
-                const SizedBox(height: 24),
-                ModeSelector(
-                  mode: thermostat.thermostat!.mode,
-                  onModeChanged: thermostat.updateMode,
-                ),
-                const SizedBox(height: 24),
-                const WeatherCard(),
-              ],
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          TemperatureDisplay(
+                            currentTemperature: thermostat.thermostat!.currentTemperature,
+                            targetTemperature: thermostat.thermostat!.targetTemperature,
+                            onTemperatureChanged: thermostat.updateTemperature,
+                            useCelsius: true,
+                          ),
+                          const SizedBox(height: 8),
+                          ModeSelector(
+                            mode: thermostat.thermostat!.mode,
+                            onModeChanged: thermostat.updateMode,
+                          ),
+                          const SizedBox(height: 8),
+                          const WeatherCard(),
+                          const SizedBox(height: 8),
+                        ],
+                      );
+                    },
+                  ),
+                ],
+              ),
             ),
-          );
-        },
+          ),
+          ScheduleListScreen(),
+        ],
       ),
     );
   }
@@ -214,6 +239,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 if (formKey.currentState!.validate()) {
                   final entry = ScheduleEntry(
                     id: DateTime.now().millisecondsSinceEpoch.toString(),
+                    scheduleId: schedule.id,
                     dayOfWeek: selectedDay,
                     startTime: startTime,
                     endTime: endTime,

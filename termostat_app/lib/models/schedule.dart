@@ -15,19 +15,20 @@ class Schedule {
   });
 
   factory Schedule.fromJson(Map<String, dynamic> json) {
+    final scheduleId = json['id'] as String;
     final entriesRaw = json['entries'];
     List<ScheduleEntry> entriesList = [];
     if (entriesRaw is List) {
       entriesList = entriesRaw
           .where((e) => e is Map)
-          .map((e) => ScheduleEntry.fromJson(Map<String, dynamic>.from(e as Map)))
+          .map((e) => ScheduleEntry.fromJson(Map<String, dynamic>.from(e as Map), parentScheduleId: scheduleId))
           .toList();
     } else {
       // Optionally log or handle the unexpected type
-      print('Unexpected entries type: \\${entriesRaw}');
+      print('Unexpected entries type: \${entriesRaw}');
     }
     return Schedule(
-      id: json['id'] as String,
+      id: scheduleId,
       name: json['name'] as String,
       entries: entriesList,
       isEnabled: json['isEnabled'] as bool,
@@ -65,6 +66,11 @@ class ScheduleEntry {
   final TimeOfDay endTime;
   final double targetTemperature;
   final String mode; // 'heat', 'cool', 'auto', 'off'
+  final String scheduleId; // Link back to the parent schedule
+  final bool isEnabled; // Whether this specific entry is enabled
+  final String repeat; // 'once', 'weekly', 'daily'
+  final List<String> excludedDates; // Dates when this recurring entry is excluded (YYYY-MM-DD)
+  final String? specificDate; // For 'once' entries: YYYY-MM-DD
 
   ScheduleEntry({
     required this.id,
@@ -73,9 +79,14 @@ class ScheduleEntry {
     required this.endTime,
     required this.targetTemperature,
     required this.mode,
+    required this.scheduleId,
+    this.isEnabled = true,
+    this.repeat = 'once', // Default to 'once'
+    this.excludedDates = const [], // Default to empty list
+    this.specificDate, // specificDate is optional
   });
 
-  factory ScheduleEntry.fromJson(Map<String, dynamic> json) {
+  factory ScheduleEntry.fromJson(Map<String, dynamic> json, {String? parentScheduleId}) {
     return ScheduleEntry(
       id: json['id'] as String,
       dayOfWeek: json['dayOfWeek'] as int,
@@ -87,8 +98,13 @@ class ScheduleEntry {
         hour: json['endTimeHour'] as int,
         minute: json['endTimeMinute'] as int,
       ),
-      targetTemperature: (json['targetTemperature'] as num).toDouble(),
-      mode: json['mode'] as String,
+      targetTemperature: (json['targetTemperature'] as num?)?.toDouble() ?? 20.0,
+      mode: json['mode'] as String? ?? 'heat',
+      scheduleId: parentScheduleId ?? json['scheduleId'] as String? ?? '',
+      isEnabled: json['isEnabled'] as bool? ?? true,
+      repeat: json['repeat'] as String? ?? 'once',
+      excludedDates: List<String>.from(json['excludedDates'] as List? ?? []), // Read excludedDates
+      specificDate: json['specificDate'] as String?, // Read specificDate
     );
   }
 
@@ -102,6 +118,11 @@ class ScheduleEntry {
       'endTimeMinute': endTime.minute,
       'targetTemperature': targetTemperature,
       'mode': mode,
+      'scheduleId': scheduleId,
+      'isEnabled': isEnabled,
+      'repeat': repeat,
+      'excludedDates': excludedDates, // Include excludedDates in JSON
+      'specificDate': specificDate, // Include specificDate in JSON
     };
   }
 
@@ -112,6 +133,11 @@ class ScheduleEntry {
     TimeOfDay? endTime,
     double? targetTemperature,
     String? mode,
+    String? scheduleId,
+    bool? isEnabled,
+    String? repeat,
+    List<String>? excludedDates,
+    String? specificDate, // Add specificDate to copyWith
   }) {
     return ScheduleEntry(
       id: id ?? this.id,
@@ -120,6 +146,11 @@ class ScheduleEntry {
       endTime: endTime ?? this.endTime,
       targetTemperature: targetTemperature ?? this.targetTemperature,
       mode: mode ?? this.mode,
+      scheduleId: scheduleId ?? this.scheduleId,
+      isEnabled: isEnabled ?? this.isEnabled,
+      repeat: repeat ?? this.repeat,
+      excludedDates: excludedDates ?? this.excludedDates,
+      specificDate: specificDate ?? this.specificDate,
     );
   }
 } 

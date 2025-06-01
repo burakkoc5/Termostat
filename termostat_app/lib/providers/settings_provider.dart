@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/material.dart';
 
 class SettingsProvider extends ChangeNotifier {
   bool _isLoading = false;
@@ -7,7 +8,7 @@ class SettingsProvider extends ChangeNotifier {
 
   double hysteresis = 0.5;
   int overrideTimeout = 60; // in minutes
-  String theme = 'system';
+  String _theme = 'light'; // Default theme is light
 
   SettingsProvider() {
     _loadSettings();
@@ -15,6 +16,7 @@ class SettingsProvider extends ChangeNotifier {
 
   bool get isLoading => _isLoading;
   String? get error => _error;
+  String get theme => _theme; // Getter for the theme
 
   Future<void> _loadSettings() async {
     _isLoading = true;
@@ -25,7 +27,7 @@ class SettingsProvider extends ChangeNotifier {
       final prefs = await SharedPreferences.getInstance();
       hysteresis = prefs.getDouble('hysteresis') ?? 0.5;
       overrideTimeout = prefs.getInt('overrideTimeout') ?? 60;
-      theme = prefs.getString('theme') ?? 'system';
+      _theme = prefs.getString('theme') ?? 'light';
     } catch (e) {
       _error = e.toString();
     } finally {
@@ -49,9 +51,16 @@ class SettingsProvider extends ChangeNotifier {
   }
 
   Future<void> setTheme(String value) async {
-    theme = value;
+    _theme = value;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('theme', value);
     notifyListeners();
+  }
+
+  Future<void> toggleTheme() async {
+    _theme = _theme == 'light' ? 'dark' : 'light';
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('theme', _theme); // Save theme to preferences
   }
 } 

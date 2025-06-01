@@ -5,14 +5,16 @@ import '../screens/schedule_entry_screen.dart';
 
 class ScheduleCard extends StatelessWidget {
   final Schedule schedule;
-  final void Function(bool)? onToggle;
-  final VoidCallback? onAdd;
+  final Function(String, bool) onToggle;
+  final VoidCallback onAdd;
+  final Function(String, ScheduleEntry) onEdit;
 
   const ScheduleCard({
     Key? key,
     required this.schedule,
-    this.onToggle,
-    this.onAdd,
+    required this.onToggle,
+    required this.onAdd,
+    required this.onEdit,
   }) : super(key: key);
 
   @override
@@ -23,7 +25,7 @@ class ScheduleCard extends StatelessWidget {
           ListTile(
             leading: Switch(
               value: schedule.isEnabled,
-              onChanged: onToggle,
+              onChanged: (enabled) => onToggle(schedule.id, enabled),
             ),
             title: Text(schedule.name),
             subtitle: Text(
@@ -76,24 +78,53 @@ class ScheduleCard extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            '${_formatTimeOfDay(entry.startTime)} - ${_formatTimeOfDay(entry.endTime)}',
-            style: const TextStyle(fontWeight: FontWeight.w500),
+          Expanded(
+            child: Text(
+              '${_getDayName(entry.dayOfWeek)}, ${_formatTime(context, entry.startTime)} - ${_formatTime(context, entry.endTime)}: ${entry.targetTemperature}°C (${entry.mode})',
+              style: const TextStyle(fontWeight: FontWeight.w500),
+            ),
           ),
-          const SizedBox(width: 16),
-          Text(
-            '${entry.mode.toUpperCase()} at ${entry.targetTemperature}°',
+          IconButton(
+            icon: const Icon(Icons.edit),
+            iconSize: 20,
+            padding: EdgeInsets.zero,
+            visualDensity: VisualDensity.compact,
+            onPressed: () {
+              onEdit(schedule.id, entry);
+            },
           ),
         ],
       ),
     );
   }
 
-  String _formatTimeOfDay(TimeOfDay time) {
-    final hour = time.hour.toString().padLeft(2, '0');
-    final minute = time.minute.toString().padLeft(2, '0');
-    return '$hour:$minute';
+  String _getDayName(int dayOfWeek) {
+    switch (dayOfWeek) {
+      case 1:
+        return 'Monday';
+      case 2:
+        return 'Tuesday';
+      case 3:
+        return 'Wednesday';
+      case 4:
+        return 'Thursday';
+      case 5:
+        return 'Friday';
+      case 6:
+        return 'Saturday';
+      case 7:
+        return 'Sunday';
+      default:
+        return '';
+    }
+  }
+
+  String _formatTime(BuildContext context, TimeOfDay time) {
+    final now = DateTime.now();
+    final dt = DateTime(now.year, now.month, now.day, time.hour, time.minute);
+    return TimeOfDay.fromDateTime(dt).format(context);
   }
 }
 

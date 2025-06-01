@@ -4,12 +4,12 @@
 #include <DallasTemperature.h>
 
 // WiFi credentials
-#define WIFI_SSID "YOUR_WIFI_SSID"
-#define WIFI_PASSWORD "YOUR_WIFI_PASSWORD"
+#define WIFI_SSID "Xiaomi_8CEA"
+#define WIFI_PASSWORD "kaandurukan09"
 
 // Firebase credentials
-#define FIREBASE_HOST "YOUR_PROJECT.firebaseio.com"
-#define FIREBASE_AUTH "YOUR_DATABASE_SECRET_OR_TOKEN"
+#define FIREBASE_HOST "termometer-4b9d6-default-rtdb.europe-west1.firebasedatabase.app/"
+#define FIREBASE_AUTH "zHPpeMbreSIUSFwGaR5y9bxv7Tc5FHdW4IDj2ql1"
 
 // Pin definitions
 #define ONE_WIRE_BUS D2      // DS18B20 data pin
@@ -27,6 +27,8 @@
 OneWire oneWire(ONE_WIRE_BUS);
 DallasTemperature sensors(&oneWire);
 FirebaseData fbdo;
+FirebaseAuth auth;
+FirebaseConfig config;
 
 float lastTargetTemp = 22.0;
 float lastHysteresis = 0.5;
@@ -54,12 +56,11 @@ void setup() {
   }
   Serial.println("\nWiFi connected!");
 
-  // Connect to Firebase
-  Firebase.begin(FIREBASE_HOST, FIREBASE_AUTH);
-  Firebase.reconnectWiFi(true);
+   config.host = FIREBASE_HOST;
+  config.signer.tokens.legacy_token = FIREBASE_AUTH;
 
-  // Initial read from Firebase
-  readFirebaseSettings();
+  Firebase.begin(&config, &auth);
+  Firebase.reconnectWiFi(true);
 }
 
 void loop() {
