@@ -23,6 +23,11 @@ class _ThermostatLogScreenState extends State<ThermostatLogScreen> {
   // Add selected week state
   late DateTime _selectedWeekStart;
 
+  // NEW: Room logs state
+  Map<String, List<RoomLogEntry>> _roomLogsByDay = {};
+  bool _isRoomLogsLoading = false;
+  String? _roomLogsError;
+
   @override
   void initState() {
     super.initState();
@@ -30,6 +35,7 @@ class _ThermostatLogScreenState extends State<ThermostatLogScreen> {
     _selectedWeekStart = DateTime.now().subtract(Duration(days: DateTime.now().weekday - 1)).copyWith(
       hour: 0, minute: 0, second: 0, millisecond: 0, microsecond: 0);
     _fetchLogData();
+    _fetchRoomLogs(); // NEW: fetch room logs
   }
 
   void _navigateWeek(int offset) {
@@ -37,6 +43,7 @@ class _ThermostatLogScreenState extends State<ThermostatLogScreen> {
       _selectedWeekStart = _selectedWeekStart.add(Duration(days: offset * 7)).copyWith(
         hour: 0, minute: 0, second: 0, millisecond: 0, microsecond: 0);
       _fetchLogData(); // Refresh data for the new week
+      _fetchRoomLogs(); // NEW: refresh room logs for new week
     });
   }
 
@@ -59,6 +66,7 @@ class _ThermostatLogScreenState extends State<ThermostatLogScreen> {
         _selectedWeekStart = selectedMonday.copyWith(hour: 0, minute: 0, second: 0, millisecond: 0, microsecond: 0);
       });
       _fetchLogData(); // Fetch data for the newly selected week
+      _fetchRoomLogs(); // NEW
     }
   }
 
@@ -69,7 +77,7 @@ class _ThermostatLogScreenState extends State<ThermostatLogScreen> {
     });
 
     try {
-      final deviceId = Provider.of<ThermostatProvider>(context, listen: false).thermostat?.id;
+      final deviceId = Provider.of<ThermostatProvider>(context, listen: false).thermostat?.id ?? "device1";
       if (deviceId == null) {
         setState(() {
           _error = 'Device ID not available.';
@@ -200,6 +208,53 @@ class _ThermostatLogScreenState extends State<ThermostatLogScreen> {
     }
 
     return recentSummaries;
+  }
+
+  // NEW: Fetch room logs from log/{YYYY-MM-DD}/{HH:mm:ss}
+  Future<void> _fetchRoomLogs() async {
+    setState(() {
+      _isRoomLogsLoading = true;
+      _roomLogsError = null;
+      _roomLogsByDay = {};
+    });
+    try {
+      // Get the 7 days of the selected week
+      final List<DateTime> weekDays = List.generate(7, (index) => _selectedWeekStart.add(Duration(days: index)));
+      for (final day in weekDays) {
+        final dayKey = '${day.year}-${day.month.toString().padLeft(2, '0')}-${day.day.toString().padLeft(2, '0')}';
+        final snapshot = await _database.child('log/$dayKey').get();
+        if (snapshot.exists && snapshot.value != null) {
+          final Map<dynamic, dynamic> data = snapshot.value as Map<dynamic, dynamic>;
+          final List<RoomLogEntry> entries = [];
+          data.forEach((time, value) {
+            if (value is Map<dynamic, dynamic>) {
+              final humidity = value['humidity'];
+              final temperature = value['temperature'];
+              if (humidity != null && temperature != null) {
+                entries.add(RoomLogEntry(
+                  time: time.toString(),
+                  humidity: double.tryParse(humidity.toString()),
+                  temperature: double.tryParse(temperature.toString()),
+                ));
+              }
+            }
+          });
+          // Sort by time
+          entries.sort((a, b) => a.time.compareTo(b.time));
+          _roomLogsByDay[dayKey] = entries;
+        } else {
+          _roomLogsByDay[dayKey] = [];
+        }
+      }
+    } catch (e) {
+      setState(() {
+        _roomLogsError = 'Failed to fetch room logs: \\${e.toString()}';
+      });
+    } finally {
+      setState(() {
+        _isRoomLogsLoading = false;
+      });
+    }
   }
 
   @override
@@ -457,6 +512,121 @@ class _ThermostatLogScreenState extends State<ThermostatLogScreen> {
             ),
           ),
         ),
+        // NEW: Room temperature/humidity logs section
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: Text('Room Temperature & Humidity Logs', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          ),
+        ),
+        _isRoomLogsLoading
+            ? const Center(child: CircularProgressIndicator())
+            : _roomLogsError != null
+                ? Center(child: Text(_roomLogsError!))
+                : Expanded(
+                    child: Builder(
+                      builder: (context) {
+                        // Get all days with logs, sort descending (newest first), take 7
+                        final daysWithLogs = _roomLogsByDay.keys.toList()
+                          ..sort((a, b) => b.compareTo(a));
+                        final recentDays = daysWithLogs.take(7).toList();
+                        return ListView.builder(
+                          itemCount: recentDays.length,
+                          itemBuilder: (context, index) {
+                            final dayKey = recentDays[index];
+                            final day = DateTime.parse(dayKey);
+                            final entries = _roomLogsByDay[dayKey] ?? [];
+                            if (entries.isEmpty) return SizedBox.shrink();
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 12.0, left: 8, right: 8),
+                              child: Card(
+                                elevation: 2,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(12.0),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        '${DateFormat('EEEE, MMM d').format(day)}',
+                                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      // Table header
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(vertical: 4.0),
+                                        child: Row(
+                                          children: [
+                                            Expanded(
+                                              flex: 2,
+                                              child: Text('Time', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                                            ),
+                                            Expanded(
+                                              flex: 2,
+                                              child: Row(
+                                                children: [
+                                                  Icon(Icons.thermostat, size: 16, color: Colors.blueGrey),
+                                                  SizedBox(width: 4),
+                                                  Text('Temp (°C)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                                                ],
+                                              ),
+                                            ),
+                                            Expanded(
+                                              flex: 2,
+                                              child: Row(
+                                                children: [
+                                                  Icon(Icons.water_drop, size: 16, color: Colors.lightBlue),
+                                                  SizedBox(width: 4),
+                                                  Text('Hum (%)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      Divider(height: 1, thickness: 1),
+                                      // Table rows
+                                      ...List.generate(entries.length, (i) {
+                                        final e = entries[i];
+                                        final isEven = i % 2 == 0;
+                                        return Container(
+                                          color: isEven ? Colors.grey.withOpacity(0.07) : Colors.transparent,
+                                          padding: const EdgeInsets.symmetric(vertical: 4.0),
+                                          child: Row(
+                                            children: [
+                                              Expanded(
+                                                flex: 2,
+                                                child: Text(e.time, style: TextStyle(fontFamily: 'monospace', fontSize: 13)),
+                                              ),
+                                              Expanded(
+                                                flex: 2,
+                                                child: Text(
+                                                  e.temperature != null ? e.temperature!.toStringAsFixed(1) : '-',
+                                                  style: TextStyle(fontSize: 13, color: Colors.blueGrey[800]),
+                                                ),
+                                              ),
+                                              Expanded(
+                                                flex: 2,
+                                                child: Text(
+                                                  e.humidity != null ? e.humidity!.toStringAsFixed(1) : '-',
+                                                  style: TextStyle(fontSize: 13, color: Colors.lightBlue[800]),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                      }),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        );
+                      },
+          ),
+        ),
       ],
     );
   }
@@ -479,4 +649,11 @@ class DailyLogSummary {
     required this.heatingOnDuration,
     required this.heatingOffDuration,
   });
+}
+
+class RoomLogEntry {
+  final String time;
+  final double? temperature;
+  final double? humidity;
+  RoomLogEntry({required this.time, this.temperature, this.humidity});
 } 

@@ -26,24 +26,22 @@ class WeatherProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      // Use Ankara's coordinates directly
+      // Request/check permission and get device's current position
+      Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+      final double latitude = position.latitude;
+      final double longitude = position.longitude;
+      print('Using device location: $latitude, $longitude');
+
+      // Fetch weather data using device's coordinates
+      _weatherData = await _wf.currentWeatherByLocation(latitude, longitude);
+      _error = null;
+    } catch (e) {
+      print('Could not get device location, using Ankara as fallback. Error: $e');
+      // Fallback to Ankara
       const double ankaraLatitude = 39.933363;
       const double ankaraLongitude = 32.859742;
-      
-      print('Using Ankara location: $ankaraLatitude, $ankaraLongitude');
-
-      // Fetch weather data using Ankara's coordinates
-      _weatherData = await _wf.currentWeatherByLocation(
-        ankaraLatitude,
-        ankaraLongitude,
-      );
-
-      _error = null; // Clear previous errors on successful fetch
-
-    } catch (e) {
-      print('Error occurred: $e');
-      _error = 'Failed to fetch weather data: ${e.toString()}';
-      _weatherData = null; // Clear previous data on error
+      _weatherData = await _wf.currentWeatherByLocation(ankaraLatitude, ankaraLongitude);
+      _error = 'Could not get device location, showing weather for Ankara.';
     } finally {
       _isLoading = false;
       notifyListeners();

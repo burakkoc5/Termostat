@@ -5,6 +5,7 @@ class Thermostat {
   final String mode; // 'heat', 'cool', 'auto', 'off'
   final bool isConnected;
   final DateTime lastUpdated;
+  final double humidity;
 
   Thermostat({
     required this.id,
@@ -13,6 +14,7 @@ class Thermostat {
     required this.mode,
     required this.isConnected,
     required this.lastUpdated,
+    required this.humidity,
   });
 
   factory Thermostat.fromJson(Map<String, dynamic> json) {
@@ -25,6 +27,7 @@ class Thermostat {
       lastUpdated: json['lastUpdated'] != null 
           ? DateTime.tryParse(json['lastUpdated'] as String) ?? DateTime.now()
           : DateTime.now(),
+      humidity: (json['currentHumidity'] as num?)?.toDouble() ?? 0.0,
     );
   }
 
@@ -36,6 +39,7 @@ class Thermostat {
       'mode': mode,
       'isConnected': isConnected,
       'lastUpdated': lastUpdated.toIso8601String(),
+      'humidity': humidity,
     };
   }
 
@@ -46,6 +50,7 @@ class Thermostat {
     String? mode,
     bool? isConnected,
     DateTime? lastUpdated,
+    double? humidity,
   }) {
     return Thermostat(
       id: id ?? this.id,
@@ -54,6 +59,7 @@ class Thermostat {
       mode: mode ?? this.mode,
       isConnected: isConnected ?? this.isConnected,
       lastUpdated: lastUpdated ?? this.lastUpdated,
+      humidity: humidity ?? this.humidity,
     );
   }
 } 

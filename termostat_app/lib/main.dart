@@ -34,9 +34,9 @@ class MyApp extends StatelessWidget {
       ],
       child: Consumer<SettingsProvider>(
         builder: (context, settings, _) {
-          return MaterialApp(
+    return MaterialApp(
             title: 'Smart Thermostat',
-            theme: ThemeData(
+      theme: ThemeData(
               useMaterial3: true,
               colorScheme: ColorScheme.fromSeed(
                 seedColor: Colors.blue,
@@ -77,9 +77,9 @@ class MyApp extends StatelessWidget {
                 children: const [
                   HomeScreen(),
                   ScheduleListScreen(),
-                ],
-              ),
-            ),
+          ],
+        ),
+      ),
             routes: {
               '/settings': (context) => const SettingsScreen(),
             },

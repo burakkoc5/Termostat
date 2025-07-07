@@ -80,7 +80,7 @@ class ThermostatProvider with ChangeNotifier {
     }
   }
 
-  void startListening() {
+  Future<void> startListening() async {
     if (_thermostat == null) return;
     _database.child('devices/${_thermostat!.id}').onValue.listen((event) {
       if (event.snapshot.exists && event.snapshot.value is Map) {
