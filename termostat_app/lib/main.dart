@@ -11,14 +11,21 @@ import 'providers/settings_provider.dart';
 import 'providers/schedule_provider.dart';
 import 'providers/weather_provider.dart';
 import 'screens/settings_screen.dart';
+import 'services/notifications_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  
+  // Initialize notifications service
+  await notificationsService.initialize();
+  
   runApp(const MyApp());
 }
+
+
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});

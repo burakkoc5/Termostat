@@ -239,8 +239,8 @@ class _ThermostatLogScreenState extends State<ThermostatLogScreen> {
               }
             }
           });
-          // Sort by time
-          entries.sort((a, b) => a.time.compareTo(b.time));
+          // Sort by time in reverse order (newest first)
+          entries.sort((a, b) => b.time.compareTo(a.time));
           _roomLogsByDay[dayKey] = entries;
         } else {
           _roomLogsByDay[dayKey] = [];

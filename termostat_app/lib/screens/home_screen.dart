@@ -11,12 +11,7 @@ import '../widgets/weather_card.dart';
 import '../widgets/default_page_controller.dart';
 import './schedule_list_screen.dart';
 import './thermostat_log_screen.dart';
-import 'package:geofence_service/geofence_service.dart';
-import 'package:geofence_service/models/geofence.dart';
-import 'package:geofence_service/models/geofence_radius.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import '../main.dart'; // for notificationsPlugin
-import 'package:geofence_service/models/geofence_status.dart';
+import '../services/geofence_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -27,27 +22,19 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final PageController _pageController = PageController(initialPage: 1);
-
-  // Geofence constants
-  static const double homeLatitude = 39.905556;
-  static const double homeLongitude = 32.870278;
-  static const double homeRadiusMeters = 200;
-  final GeofenceService _geofenceService = GeofenceService.instance.setup(
-    interval: 5000,
-    accuracy: 100,
-    loiteringDelayMs: 60000,
-    statusChangeDelayMs: 10000,
-    useActivityRecognition: false,
-    allowMockLocations: false,
-    printDevLog: true,
-  );
-  bool _geofenceStarted = false;
+  final ThermostatGeofenceService _geofenceService = ThermostatGeofenceService();
 
   @override
   void initState() {
     super.initState();
     _initializeData();
     _startGeofence();
+    
+    // Listen to settings changes to update geofence
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final settings = Provider.of<SettingsProvider>(context, listen: false);
+      settings.addListener(_onSettingsChanged);
+    });
   }
 
   Future<void> _initializeData() async {
@@ -58,58 +45,29 @@ class _HomeScreenState extends State<HomeScreen> {
     await thermostat.startListening();
     await schedule.loadSchedules();
     if (!mounted) return;
-    if (!mounted) return;
     schedule.startScheduleChecker(thermostat);
   }
 
   void _startGeofence() async {
-    if (_geofenceStarted) return;
-    _geofenceStarted = true;
-    _geofenceService.addGeofence(
-      Geofence(
-        id: 'home',
-        latitude: homeLatitude,
-        longitude: homeLongitude,
-        radius: [GeofenceRadius(id: 'radius_200m', length: homeRadiusMeters)],
-      ),
-    );
-    _geofenceService.addGeofenceStatusChangeListener(
-      (Geofence geofence, GeofenceRadius radius, GeofenceStatus status, location) async {
-        if (geofence.id == 'home') {
-          if (status == GeofenceStatus.ENTER) {
-            await _sendNotification('Welcome home! Adjusting temperature and turning heating on.');
-            final thermostat = Provider.of<ThermostatProvider>(context, listen: false);
-            if (thermostat.thermostat != null) {
-              thermostat.updateTemperature(25.0);
-              thermostat.updateMode('on');
-            }
-          } else if (status == GeofenceStatus.EXIT) {
-            await _sendNotification('You left home. "Hanıma haber vermeyi unutmayın." Setting eco mode and turning heating off.');
-            final thermostat = Provider.of<ThermostatProvider>(context, listen: false);
-            if (thermostat.thermostat != null) {
-              thermostat.updateTemperature(18.0);
-              thermostat.updateMode('off');
-            }
-          }
-        }
-      }
-    );
-    _geofenceService.start();
+    await _geofenceService.initialize(context);
+    await _geofenceService.start(context);
   }
 
-  Future<void> _sendNotification(String message) async {
-    const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
-      'geofence_channel', 'Geofence', channelDescription: 'Geofence notifications',
-      importance: Importance.max, priority: Priority.high,
-    );
-    const NotificationDetails details = NotificationDetails(android: androidDetails);
-    await notificationsPlugin.show(0, 'Thermostat', message, details);
+  void _onSettingsChanged() {
+    // Update geofence when settings change
+    if (mounted) {
+      _geofenceService.updateGeofence(context);
+    }
   }
+
+
 
   @override
   void dispose() {
     Provider.of<ThermostatProvider>(context, listen: false).stopListening();
     Provider.of<ScheduleProvider>(context, listen: false).stopScheduleChecker();
+    Provider.of<SettingsProvider>(context, listen: false).removeListener(_onSettingsChanged);
+    _geofenceService.stop();
     _pageController.dispose();
     super.dispose();
   }
