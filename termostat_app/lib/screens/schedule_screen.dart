@@ -91,8 +91,9 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                 child: ScheduleCard(
                   schedule: schedule,
                   onEdit: () => _showEditScheduleDialog(context, schedule),
-                  onDelete: () => _showDeleteConfirmation(context, schedule),
-                  onToggle: (enabled) => provider.toggleSchedule(schedule.id, enabled),
+                  onToggle: (enabled) =>
+                      provider.toggleSchedule(schedule.id, enabled),
+                  onAdd: () => _showAddScheduleDialog(context),
                 ),
               );
             },
@@ -150,7 +151,8 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
     );
   }
 
-  Future<void> _showEditScheduleDialog(BuildContext context, Schedule schedule) async {
+  Future<void> _showEditScheduleDialog(
+      BuildContext context, Schedule schedule) async {
     final nameController = TextEditingController(text: schedule.name);
     final formKey = GlobalKey<FormState>();
 
@@ -185,7 +187,9 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                 final updatedSchedule = schedule.copyWith(
                   name: nameController.text,
                 );
-                context.read<ScheduleProvider>().updateSchedule(updatedSchedule);
+                context
+                    .read<ScheduleProvider>()
+                    .updateSchedule(updatedSchedule);
                 Navigator.pop(context);
               }
             },
@@ -196,7 +200,8 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
     );
   }
 
-  Future<void> _showDeleteConfirmation(BuildContext context, Schedule schedule) async {
+  Future<void> _showDeleteConfirmation(
+      BuildContext context, Schedule schedule) async {
     return showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -222,4 +227,4 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
       ),
     );
   }
-} 
+}

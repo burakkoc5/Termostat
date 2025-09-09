@@ -1,5 +1,3 @@
-import 'package:flutter/foundation.dart';
-
 class Settings {
   final double hysteresis;
   final int overrideTimeout;
@@ -36,4 +34,4 @@ class Settings {
       theme: theme ?? this.theme,
     );
   }
-} 
+}

@@ -5,9 +5,9 @@ import '../screens/schedule_entry_screen.dart';
 
 class ScheduleCard extends StatelessWidget {
   final Schedule schedule;
-  final Function(String, bool) onToggle;
+  final dynamic onToggle;
   final VoidCallback onAdd;
-  final Function(String, ScheduleEntry) onEdit;
+  final dynamic onEdit;
 
   const ScheduleCard({
     Key? key,
@@ -52,7 +52,8 @@ class ScheduleCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   ...schedule.entries
-                      .where((entry) => entry.dayOfWeek == DateTime.now().weekday)
+                      .where(
+                          (entry) => entry.dayOfWeek == DateTime.now().weekday)
                       .map((entry) => _buildScheduleEntry(context, entry))
                       .toList(),
                 ],
@@ -149,8 +150,8 @@ class _ScheduleList extends StatelessWidget {
               Text(
                 'No schedules yet',
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: Theme.of(context).colorScheme.outline,
-                ),
+                      color: Theme.of(context).colorScheme.outline,
+                    ),
               ),
               const SizedBox(height: 8),
               TextButton(
@@ -185,7 +186,7 @@ class _ScheduleItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
       child: ListTile(
@@ -218,8 +219,6 @@ class _ScheduleItem extends StatelessWidget {
           ],
         ),
       ),
-    ).animate()
-      .fadeIn(duration: 600.ms)
-      .slideX(delay: 200.ms);
+    ).animate().fadeIn(duration: 600.ms).slideX(delay: 200.ms);
   }
-} 
+}

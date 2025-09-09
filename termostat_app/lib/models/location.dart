@@ -1,5 +1,3 @@
-import 'package:flutter/foundation.dart';
-
 class Location {
   final String id;
   final String name;
@@ -74,4 +72,4 @@ class Location {
       homeTemperature: homeTemperature ?? this.homeTemperature,
     );
   }
-} 
+}

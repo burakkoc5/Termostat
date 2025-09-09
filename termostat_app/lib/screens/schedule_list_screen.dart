@@ -26,13 +26,15 @@ class _ScheduleListScreenState extends State<ScheduleListScreen> {
   }
 
   // Method to handle editing a schedule entry
-  Future<void> _editScheduleEntry(String scheduleId, ScheduleEntry entry) async {
+  Future<void> _editScheduleEntry(
+      String scheduleId, ScheduleEntry entry) async {
     final formKey = GlobalKey<FormState>();
     int selectedDay = entry.dayOfWeek;
     TimeOfDay startTime = entry.startTime;
     TimeOfDay endTime = entry.endTime;
     double targetTemperature = entry.targetTemperature;
-    String selectedMode = entry.mode ?? 'heat'; // Initialize with entry.mode, default to 'heat'
+    String selectedMode =
+        entry.mode ?? 'heat'; // Initialize with entry.mode, default to 'heat'
 
     return showDialog(
       context: context,
@@ -120,9 +122,12 @@ class _ScheduleListScreenState extends State<ScheduleListScreen> {
                       labelText: 'Mode',
                     ),
                     items: const [
-                      DropdownMenuItem(value: 'heating_on', child: Text('Heating on')),
-                      DropdownMenuItem(value: 'heating_off', child: Text('Heating off')),
-                      DropdownMenuItem(value: 'manual', child: Text('Manual control')),
+                      DropdownMenuItem(
+                          value: 'heating_on', child: Text('Heating on')),
+                      DropdownMenuItem(
+                          value: 'heating_off', child: Text('Heating off')),
+                      DropdownMenuItem(
+                          value: 'manual', child: Text('Manual control')),
                     ],
                     onChanged: (value) {
                       if (value != null) {
@@ -143,10 +148,12 @@ class _ScheduleListScreenState extends State<ScheduleListScreen> {
               onPressed: () {
                 if (formKey.currentState!.validate()) {
                   // Add validation to check if start and end times are the same
-                  if (startTime.hour == endTime.hour && startTime.minute == endTime.minute) {
+                  if (startTime.hour == endTime.hour &&
+                      startTime.minute == endTime.minute) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                        content: Text('Start time and end time cannot be the same.'),
+                        content:
+                            Text('Start time and end time cannot be the same.'),
                       ),
                     );
                     return; // Prevent saving if times are the same
@@ -161,7 +168,8 @@ class _ScheduleListScreenState extends State<ScheduleListScreen> {
                     scheduleId: scheduleId, // Ensure scheduleId is kept
                   );
 
-                  Provider.of<ScheduleProvider>(context, listen: false).updateEntryInSchedule(scheduleId, updatedEntry);
+                  Provider.of<ScheduleProvider>(context, listen: false)
+                      .updateEntryInSchedule(scheduleId, updatedEntry);
 
                   Navigator.pop(context);
                 }
@@ -175,18 +183,21 @@ class _ScheduleListScreenState extends State<ScheduleListScreen> {
   }
 
   // Method to show delete confirmation dialog
-  Future<void> _showDeleteConfirmation(BuildContext context, String scheduleId, ScheduleEntry entry, DateTime selectedDay) async {
+  Future<void> _showDeleteConfirmation(BuildContext context, String scheduleId,
+      ScheduleEntry entry, DateTime selectedDay) async {
     // Determine the confirmation message based on repeat type
     String confirmationMessage;
     if (entry.repeat == 'once') {
-      confirmationMessage = 'Are you sure you want to delete this one-time entry for ${_getDayName(entry.dayOfWeek)} '
-                            'from ${_formatTimeOfDay(entry.startTime)} to ${_formatTimeOfDay(entry.endTime)}?';
+      confirmationMessage =
+          'Are you sure you want to delete this one-time entry for ${_getDayName(entry.dayOfWeek)} '
+          'from ${_formatTimeOfDay(entry.startTime)} to ${_formatTimeOfDay(entry.endTime)}?';
     } else {
       // For 'weekly' and 'daily', deletion for all days removes the recurring entry entirely
-      confirmationMessage = 'Are you sure you want to delete this recurring entry '
-                            '(${entry.repeat}) for ${_getDayName(entry.dayOfWeek)}s '
-                            'from ${_formatTimeOfDay(entry.startTime)} to ${_formatTimeOfDay(entry.endTime)}? '
-                            'This will remove it for all repeating days.';
+      confirmationMessage =
+          'Are you sure you want to delete this recurring entry '
+          '(${entry.repeat}) for ${_getDayName(entry.dayOfWeek)}s '
+          'from ${_formatTimeOfDay(entry.startTime)} to ${_formatTimeOfDay(entry.endTime)}? '
+          'This will remove it for all repeating days.';
     }
 
     return showDialog(
@@ -200,15 +211,20 @@ class _ScheduleListScreenState extends State<ScheduleListScreen> {
             child: const Text('Cancel'),
           ),
           // Option to delete for this day only (for recurring entries) or the single entry (for once)
-          if (entry.repeat != 'once') // Only show 'Delete for this day' for recurring entries
+          if (entry.repeat !=
+              'once') // Only show 'Delete for this day' for recurring entries
             TextButton(
               onPressed: () {
                 if (!mounted) return; // Check if the widget is still mounted
                 // Add selected day to excluded dates and update the entry
-                final dateToExclude = '${selectedDay.year}-${selectedDay.month.toString().padLeft(2, '0')}-${selectedDay.day.toString().padLeft(2, '0')}';
-                final updatedExcludedDates = List<String>.from(entry.excludedDates)..add(dateToExclude);
-                final updatedEntry = entry.copyWith(excludedDates: updatedExcludedDates);
-                Provider.of<ScheduleProvider>(context, listen: false).updateEntryInSchedule(scheduleId, updatedEntry);
+                final dateToExclude =
+                    '${selectedDay.year}-${selectedDay.month.toString().padLeft(2, '0')}-${selectedDay.day.toString().padLeft(2, '0')}';
+                final updatedExcludedDates =
+                    List<String>.from(entry.excludedDates)..add(dateToExclude);
+                final updatedEntry =
+                    entry.copyWith(excludedDates: updatedExcludedDates);
+                Provider.of<ScheduleProvider>(context, listen: false)
+                    .updateEntryInSchedule(scheduleId, updatedEntry);
                 Navigator.pop(context); // Close the dialog
               },
               child: const Text('Delete for this day'),
@@ -226,7 +242,8 @@ class _ScheduleListScreenState extends State<ScheduleListScreen> {
               backgroundColor: Colors.red,
               foregroundColor: Colors.white,
             ),
-            child: const Text('Delete All'), // Button to delete the entire entry
+            child:
+                const Text('Delete All'), // Button to delete the entire entry
           ),
         ],
       ),
@@ -235,24 +252,30 @@ class _ScheduleListScreenState extends State<ScheduleListScreen> {
 
   // Method to get a list of schedule entries for a given day
   List<ScheduleEntry> _getEntriesForDay(DateTime day) {
-    final scheduleProvider = Provider.of<ScheduleProvider>(context, listen: false);
+    final scheduleProvider =
+        Provider.of<ScheduleProvider>(context, listen: false);
     final entries = <ScheduleEntry>[];
     final normalizedDay = DateTime(day.year, day.month, day.day);
-    final formattedDay = '${normalizedDay.year}-${normalizedDay.month.toString().padLeft(2, '0')}-${normalizedDay.day.toString().padLeft(2, '0')}'; // Format for exclusion check
+    final formattedDay =
+        '${normalizedDay.year}-${normalizedDay.month.toString().padLeft(2, '0')}-${normalizedDay.day.toString().padLeft(2, '0')}'; // Format for exclusion check
 
     for (var schedule in scheduleProvider.schedules) {
       for (var entry in schedule.entries) {
         // Include entries that match the day of the week, repeat daily, or match the specific date for 'once' entries
-        final isRecurringEntryForDay = (entry.repeat == 'daily' || (entry.repeat == 'weekly' && entry.dayOfWeek == normalizedDay.weekday))
-                                      && !entry.excludedDates.contains(formattedDay);
-        final isOnceEntryForDay = entry.repeat == 'once' && entry.specificDate == formattedDay;
+        final isRecurringEntryForDay = (entry.repeat == 'daily' ||
+                (entry.repeat == 'weekly' &&
+                    entry.dayOfWeek == normalizedDay.weekday)) &&
+            !entry.excludedDates.contains(formattedDay);
+        final isOnceEntryForDay =
+            entry.repeat == 'once' && entry.specificDate == formattedDay;
         if (isRecurringEntryForDay || isOnceEntryForDay) {
           entries.add(entry);
         }
       }
     }
     // Sort entries by start time
-    entries.sort((a, b) => _timeOfDayToDateTime(a.startTime).compareTo(_timeOfDayToDateTime(b.startTime)));
+    entries.sort((a, b) => _timeOfDayToDateTime(a.startTime)
+        .compareTo(_timeOfDayToDateTime(b.startTime)));
     return entries;
   }
 
@@ -280,7 +303,8 @@ class _ScheduleListScreenState extends State<ScheduleListScreen> {
 
           if (scheduleProvider.schedules.isEmpty) {
             return const Center(
-              child: Text('No schedules available. Tap the + button to create one.'),
+              child: Text(
+                  'No schedules available. Tap the + button to create one.'),
             );
           }
 
@@ -327,13 +351,18 @@ class _ScheduleListScreenState extends State<ScheduleListScreen> {
                 // Implement eventLoader to show events on days with schedules
                 eventLoader: (day) {
                   // Determine if the given day has any relevant schedule entries
-                  final formattedDay = '${day.year}-${day.month.toString().padLeft(2, '0')}-${day.day.toString().padLeft(2, '0')}'; // Format for comparison
+                  final formattedDay =
+                      '${day.year}-${day.month.toString().padLeft(2, '0')}-${day.day.toString().padLeft(2, '0')}'; // Format for comparison
 
-                  bool hasRelevantEntry = scheduleProvider.schedules.any((schedule) {
+                  bool hasRelevantEntry =
+                      scheduleProvider.schedules.any((schedule) {
                     return schedule.entries.any((entry) {
-                      final isRecurringEntryForDay = (entry.repeat == 'daily' || (entry.repeat == 'weekly' && entry.dayOfWeek == day.weekday))
-                                                     && !entry.excludedDates.contains(formattedDay);
-                      final isOnceEntryForDay = entry.repeat == 'once' && entry.specificDate == formattedDay;
+                      final isRecurringEntryForDay = (entry.repeat == 'daily' ||
+                              (entry.repeat == 'weekly' &&
+                                  entry.dayOfWeek == day.weekday)) &&
+                          !entry.excludedDates.contains(formattedDay);
+                      final isOnceEntryForDay = entry.repeat == 'once' &&
+                          entry.specificDate == formattedDay;
 
                       return isRecurringEntryForDay || isOnceEntryForDay;
                     });
@@ -342,7 +371,7 @@ class _ScheduleListScreenState extends State<ScheduleListScreen> {
                   // Return a dummy event list if there are relevant entries to show a dot
                   return hasRelevantEntry ? ['event'] : [];
                 },
-                headerStyle: HeaderStyle(formatButtonShowsNext: false),
+                headerStyle: const HeaderStyle(formatButtonShowsNext: false),
               ),
               const SizedBox(height: 8.0),
               // Show selected date title
@@ -360,15 +389,17 @@ class _ScheduleListScreenState extends State<ScheduleListScreen> {
               // Display entries for the selected day
               Expanded(
                 child: entriesForSelectedDay.isEmpty
-                    ? Center(child: Text('No schedules for this day.'))
+                    ? const Center(child: Text('No schedules for this day.'))
                     : ListView.builder(
                         padding: const EdgeInsets.all(16.0),
                         itemCount: entriesForSelectedDay.length,
                         itemBuilder: (context, index) {
                           final entry = entriesForSelectedDay[index];
                           // Determine if this entry is the currently active one
-                          final activeEntry = scheduleProvider.findActiveScheduleEntry();
-                          final isEntryActive = activeEntry != null && activeEntry.id == entry.id;
+                          final activeEntry =
+                              scheduleProvider.findActiveScheduleEntry();
+                          final isEntryActive =
+                              activeEntry != null && activeEntry.id == entry.id;
 
                           // Display entry details as ListTile
                           return Card(
@@ -383,26 +414,34 @@ class _ScheduleListScreenState extends State<ScheduleListScreen> {
                                     height: 10,
                                     decoration: BoxDecoration(
                                       shape: BoxShape.circle,
-                                      color: isEntryActive ? Colors.green : Colors.grey,
+                                      color: isEntryActive
+                                          ? Colors.green
+                                          : Colors.grey,
                                     ),
                                   ),
-                                  const SizedBox(width: 8), // Spacing between LED and CircleAvatar
-                                  CircleAvatar(child: Text(_getDayInitial(entry.dayOfWeek))),
+                                  const SizedBox(
+                                      width:
+                                          8), // Spacing between LED and CircleAvatar
+                                  CircleAvatar(
+                                      child: Text(
+                                          _getDayInitial(entry.dayOfWeek))),
                                 ],
                               ),
-                              title: Text('${_formatTimeOfDay(entry.startTime)} - ${_formatTimeOfDay(entry.endTime)}'),
-                              subtitle: Text(
+                              title: Text(
+                                  '${_formatTimeOfDay(entry.startTime)} - ${_formatTimeOfDay(entry.endTime)}'),
+                              subtitle: Text((entry.mode == 'heating_on'
+                                      ? 'Heating on'
+                                      : entry.mode == 'heating_off'
+                                          ? 'Heating off'
+                                          : 'Manual control') +
                                   (entry.mode == 'heating_on'
-                                          ? 'Heating on'
-                                          : entry.mode == 'heating_off'
-                                              ? 'Heating off'
-                                              : 'Manual control') +
-                                      (entry.mode == 'heating_on' ? ' at ${entry.targetTemperature}°' : '') +
-                                      (entry.repeat == 'weekly'
-                                          ? ' (Weekly)'
-                                          : entry.repeat == 'daily'
-                                              ? ' (Daily)'
-                                              : ' (Once)')),
+                                      ? ' at ${entry.targetTemperature}°'
+                                      : '') +
+                                  (entry.repeat == 'weekly'
+                                      ? ' (Weekly)'
+                                      : entry.repeat == 'daily'
+                                          ? ' (Daily)'
+                                          : ' (Once)')),
                               trailing: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
@@ -411,7 +450,8 @@ class _ScheduleListScreenState extends State<ScheduleListScreen> {
                                     tooltip: 'Edit Entry',
                                     onPressed: () {
                                       // Pass scheduleId and entry to edit handler
-                                      _editScheduleEntry(entry.scheduleId, entry);
+                                      _editScheduleEntry(
+                                          entry.scheduleId, entry);
                                     },
                                   ),
                                   IconButton(
@@ -419,7 +459,11 @@ class _ScheduleListScreenState extends State<ScheduleListScreen> {
                                     tooltip: 'Delete Entry',
                                     onPressed: () {
                                       // Pass context, scheduleId, entry, and selectedDay to delete handler
-                                      _showDeleteConfirmation(context, entry.scheduleId, entry, _selectedDay!);
+                                      _showDeleteConfirmation(
+                                          context,
+                                          entry.scheduleId,
+                                          entry,
+                                          _selectedDay!);
                                     },
                                   ),
                                 ],
@@ -436,7 +480,8 @@ class _ScheduleListScreenState extends State<ScheduleListScreen> {
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           if (!mounted) return; // Check if the widget is still mounted
-          _showAddEntryDialog(context, Provider.of<ScheduleProvider>(context, listen: false));
+          _showAddEntryDialog(
+              context, Provider.of<ScheduleProvider>(context, listen: false));
         },
         child: const Icon(Icons.add),
       ),
@@ -446,14 +491,22 @@ class _ScheduleListScreenState extends State<ScheduleListScreen> {
   // Helper method to get day initial (copying from ScheduleEntryScreen)
   String _getDayInitial(int day) {
     switch (day) {
-      case 1: return 'M';
-      case 2: return 'T';
-      case 3: return 'W';
-      case 4: return 'T';
-      case 5: return 'F';
-      case 6: return 'S';
-      case 7: return 'S';
-      default: return '';
+      case 1:
+        return 'M';
+      case 2:
+        return 'T';
+      case 3:
+        return 'W';
+      case 4:
+        return 'T';
+      case 5:
+        return 'F';
+      case 6:
+        return 'S';
+      case 7:
+        return 'S';
+      default:
+        return '';
     }
   }
 
@@ -467,19 +520,28 @@ class _ScheduleListScreenState extends State<ScheduleListScreen> {
   // Helper method to get day name (copying from ScheduleEntryScreen)
   String _getDayName(int day) {
     switch (day) {
-      case 1: return 'Monday';
-      case 2: return 'Tuesday';
-      case 3: return 'Wednesday';
-      case 4: return 'Thursday';
-      case 5: return 'Friday';
-      case 6: return 'Saturday';
-      case 7: return 'Sunday';
-      default: return '';
+      case 1:
+        return 'Monday';
+      case 2:
+        return 'Tuesday';
+      case 3:
+        return 'Wednesday';
+      case 4:
+        return 'Thursday';
+      case 5:
+        return 'Friday';
+      case 6:
+        return 'Saturday';
+      case 7:
+        return 'Sunday';
+      default:
+        return '';
     }
   }
 
   // Method to show a dialog to add a new schedule entry
-  Future<void> _showAddEntryDialog(BuildContext context, ScheduleProvider scheduleProvider) async {
+  Future<void> _showAddEntryDialog(
+      BuildContext context, ScheduleProvider scheduleProvider) async {
     if (scheduleProvider.schedules.isEmpty) {
       // Show a message if no schedules exist
       ScaffoldMessenger.of(context).showSnackBar(
@@ -492,18 +554,25 @@ class _ScheduleListScreenState extends State<ScheduleListScreen> {
 
     // Directly show the new entry details dialog for the first schedule
     final firstSchedule = scheduleProvider.schedules.first;
-    _showNewEntryDetailsDialog(context, scheduleProvider, firstSchedule, _selectedDay ?? DateTime.now());
+    _showNewEntryDetailsDialog(context, scheduleProvider, firstSchedule,
+        _selectedDay ?? DateTime.now());
   }
 
   // Method to show a dialog to add a new schedule entry details
-  Future<void> _showNewEntryDetailsDialog(BuildContext context, ScheduleProvider scheduleProvider, Schedule schedule, DateTime initialDate) async {
+  Future<void> _showNewEntryDetailsDialog(
+      BuildContext context,
+      ScheduleProvider scheduleProvider,
+      Schedule schedule,
+      DateTime initialDate) async {
     final formKey = GlobalKey<FormState>();
-    int selectedDay = initialDate.weekday; // Default to the selected date's weekday
+    int selectedDay =
+        initialDate.weekday; // Default to the selected date's weekday
     TimeOfDay startTime = TimeOfDay.now();
     TimeOfDay endTime = TimeOfDay.now();
     double targetTemperature = 20.0; // Default temperature
     String selectedMode = 'heating_on'; // Default mode
-    String selectedRepeat = 'once'; // Define this variable at the beginning of _showNewEntryDetailsDialog
+    String selectedRepeat =
+        'once'; // Define this variable at the beginning of _showNewEntryDetailsDialog
 
     return showDialog(
       context: context,
@@ -592,8 +661,10 @@ class _ScheduleListScreenState extends State<ScheduleListScreen> {
                     ),
                     items: const [
                       DropdownMenuItem(value: 'once', child: Text('Once')),
-                      DropdownMenuItem(value: 'weekly', child: Text('Every Week')),
-                      DropdownMenuItem(value: 'daily', child: Text('Every Day')),
+                      DropdownMenuItem(
+                          value: 'weekly', child: Text('Every Week')),
+                      DropdownMenuItem(
+                          value: 'daily', child: Text('Every Day')),
                     ],
                     onChanged: (value) {
                       if (value != null) {
@@ -608,9 +679,12 @@ class _ScheduleListScreenState extends State<ScheduleListScreen> {
                       labelText: 'Mode',
                     ),
                     items: const [
-                      DropdownMenuItem(value: 'heating_on', child: Text('Heating on')),
-                      DropdownMenuItem(value: 'heating_off', child: Text('Heating off')),
-                      DropdownMenuItem(value: 'manual', child: Text('Manual control')),
+                      DropdownMenuItem(
+                          value: 'heating_on', child: Text('Heating on')),
+                      DropdownMenuItem(
+                          value: 'heating_off', child: Text('Heating off')),
+                      DropdownMenuItem(
+                          value: 'manual', child: Text('Manual control')),
                     ],
                     onChanged: (value) {
                       if (value != null) {
@@ -623,15 +697,19 @@ class _ScheduleListScreenState extends State<ScheduleListScreen> {
             ),
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+            TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancel')),
             ElevatedButton(
               onPressed: () {
                 if (formKey.currentState!.validate()) {
                   // Add validation to check if start and end times are the same
-                  if (startTime.hour == endTime.hour && startTime.minute == endTime.minute) {
+                  if (startTime.hour == endTime.hour &&
+                      startTime.minute == endTime.minute) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                        content: Text('Start time and end time cannot be the same.'),
+                        content:
+                            Text('Start time and end time cannot be the same.'),
                       ),
                     );
                     return; // Prevent saving if times are the same
@@ -639,7 +717,9 @@ class _ScheduleListScreenState extends State<ScheduleListScreen> {
 
                   // Create a new ScheduleEntry object
                   final newEntry = ScheduleEntry(
-                    id: DateTime.now().millisecondsSinceEpoch.toString(), // Simple unique ID
+                    id: DateTime.now()
+                        .millisecondsSinceEpoch
+                        .toString(), // Simple unique ID
                     dayOfWeek: selectedDay,
                     startTime: startTime,
                     endTime: endTime,
@@ -647,7 +727,9 @@ class _ScheduleListScreenState extends State<ScheduleListScreen> {
                     mode: selectedMode,
                     repeat: selectedRepeat, // Include the selected repetition
                     scheduleId: schedule.id, // Assign to the selected schedule
-                    specificDate: selectedRepeat == 'once' ? _selectedDay?.toShortString() : null, // Set specificDate for 'once' entries
+                    specificDate: selectedRepeat == 'once'
+                        ? _selectedDay?.toShortString()
+                        : null, // Set specificDate for 'once' entries
                   );
 
                   // Add the new entry to the selected schedule using the provider
@@ -667,6 +749,6 @@ class _ScheduleListScreenState extends State<ScheduleListScreen> {
 
 extension on DateTime {
   String toShortString() {
-    return '${this.year}-${this.month.toString().padLeft(2, '0')}-${this.day.toString().padLeft(2, '0')}';
+    return '${year}-${month.toString().padLeft(2, '0')}-${day.toString().padLeft(2, '0')}';
   }
-} 
+}

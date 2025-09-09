@@ -23,13 +23,12 @@ class ScheduleProvider with ChangeNotifier {
       final snapshot = await _database.child('schedules').get();
       if (snapshot.exists && snapshot.value is Map) {
         final raw = snapshot.value as Map;
-        _schedules = raw.entries
-            .where((entry) => entry.value is Map)
-            .map((entry) {
-              final scheduleData = Map<String, dynamic>.from(entry.value as Map);
-              scheduleData['id'] = entry.key;
-              return Schedule.fromJson(scheduleData);
-            }).toList();
+        _schedules =
+            raw.entries.where((entry) => entry.value is Map).map((entry) {
+          final scheduleData = Map<String, dynamic>.from(entry.value as Map);
+          scheduleData['id'] = entry.key;
+          return Schedule.fromJson(scheduleData);
+        }).toList();
       } else {
         _schedules = [];
       }
@@ -63,7 +62,9 @@ class ScheduleProvider with ChangeNotifier {
     _error = null;
     notifyListeners();
     try {
-      await _database.child('schedules/${schedule.id}').update(schedule.toJson());
+      await _database
+          .child('schedules/${schedule.id}')
+          .update(schedule.toJson());
       final index = _schedules.indexWhere((s) => s.id == schedule.id);
       if (index != -1) {
         _schedules[index] = schedule;
@@ -103,18 +104,23 @@ class ScheduleProvider with ChangeNotifier {
     }
   }
 
-  Future<void> addEntryToSchedule(String scheduleId, ScheduleEntry entry) async {
+  Future<void> addEntryToSchedule(
+      String scheduleId, ScheduleEntry entry) async {
     _isLoading = true;
     _error = null;
     notifyListeners();
     try {
       final scheduleIndex = _schedules.indexWhere((s) => s.id == scheduleId);
       if (scheduleIndex != -1) {
-        final updatedEntries = List<ScheduleEntry>.from(_schedules[scheduleIndex].entries);
+        final updatedEntries =
+            List<ScheduleEntry>.from(_schedules[scheduleIndex].entries);
         updatedEntries.add(entry);
-        final updatedSchedule = _schedules[scheduleIndex].copyWith(entries: updatedEntries);
+        final updatedSchedule =
+            _schedules[scheduleIndex].copyWith(entries: updatedEntries);
 
-        await _database.child('schedules/$scheduleId/entries').set(updatedEntries.map((e) => e.toJson()).toList());
+        await _database
+            .child('schedules/$scheduleId/entries')
+            .set(updatedEntries.map((e) => e.toJson()).toList());
 
         _schedules[scheduleIndex] = updatedSchedule;
       } else {
@@ -128,20 +134,25 @@ class ScheduleProvider with ChangeNotifier {
     }
   }
 
-  Future<void> updateEntryInSchedule(String scheduleId, ScheduleEntry entry) async {
+  Future<void> updateEntryInSchedule(
+      String scheduleId, ScheduleEntry entry) async {
     _isLoading = true;
     _error = null;
     notifyListeners();
     try {
       final scheduleIndex = _schedules.indexWhere((s) => s.id == scheduleId);
       if (scheduleIndex != -1) {
-        final updatedEntries = List<ScheduleEntry>.from(_schedules[scheduleIndex].entries);
+        final updatedEntries =
+            List<ScheduleEntry>.from(_schedules[scheduleIndex].entries);
         final entryIndex = updatedEntries.indexWhere((e) => e.id == entry.id);
         if (entryIndex != -1) {
           updatedEntries[entryIndex] = entry;
-          final updatedSchedule = _schedules[scheduleIndex].copyWith(entries: updatedEntries);
+          final updatedSchedule =
+              _schedules[scheduleIndex].copyWith(entries: updatedEntries);
 
-          await _database.child('schedules/$scheduleId/entries').set(updatedEntries.map((e) => e.toJson()).toList());
+          await _database
+              .child('schedules/$scheduleId/entries')
+              .set(updatedEntries.map((e) => e.toJson()).toList());
 
           _schedules[scheduleIndex] = updatedSchedule;
         } else {
@@ -158,19 +169,24 @@ class ScheduleProvider with ChangeNotifier {
     }
   }
 
-  Future<void> removeEntryFromSchedule(String scheduleId, String entryId) async {
+  Future<void> removeEntryFromSchedule(
+      String scheduleId, String entryId) async {
     _isLoading = true;
     _error = null;
     notifyListeners();
     try {
       final scheduleIndex = _schedules.indexWhere((s) => s.id == scheduleId);
       if (scheduleIndex != -1) {
-        final updatedEntries = List<ScheduleEntry>.from(_schedules[scheduleIndex].entries)
-            .where((e) => e.id != entryId)
-            .toList();
-        final updatedSchedule = _schedules[scheduleIndex].copyWith(entries: updatedEntries);
+        final updatedEntries =
+            List<ScheduleEntry>.from(_schedules[scheduleIndex].entries)
+                .where((e) => e.id != entryId)
+                .toList();
+        final updatedSchedule =
+            _schedules[scheduleIndex].copyWith(entries: updatedEntries);
 
-        await _database.child('schedules/$scheduleId/entries').set(updatedEntries.map((e) => e.toJson()).toList());
+        await _database
+            .child('schedules/$scheduleId/entries')
+            .set(updatedEntries.map((e) => e.toJson()).toList());
 
         _schedules[scheduleIndex] = updatedSchedule;
       } else {
@@ -207,7 +223,8 @@ class ScheduleProvider with ChangeNotifier {
         bool dayMatches = false;
         if (entry.repeat == 'daily') {
           dayMatches = true;
-        } else if (entry.repeat == 'weekly' && entry.dayOfWeek == currentWeekday) {
+        } else if (entry.repeat == 'weekly' &&
+            entry.dayOfWeek == currentWeekday) {
           dayMatches = true;
         } else if (entry.repeat == 'once') {
           // For 'once' entries, check the specific date
@@ -228,7 +245,8 @@ class ScheduleProvider with ChangeNotifier {
           final entryEndTime = _timeOfDayToDateTime(entry.endTime);
           final currentTimeDateTime = _timeOfDayToDateTime(currentTime);
 
-          if (currentTimeDateTime.isAfter(entryStartTime) && currentTimeDateTime.isBefore(entryEndTime)) {
+          if (currentTimeDateTime.isAfter(entryStartTime) &&
+              currentTimeDateTime.isBefore(entryEndTime)) {
             // Found an active entry. If multiple entries overlap, the last one found will be considered active.
             // This is a simple approach, could be refined to prioritize or handle overlaps differently.
             activeEntry = entry;
@@ -258,17 +276,20 @@ class ScheduleProvider with ChangeNotifier {
         // Apply the active entry's settings
         // Map schedule modes to thermostat modes if necessary
         String thermostatMode = activeEntry.mode;
-        if (thermostatMode == 'heating_on') thermostatMode = 'on';
-        else if (thermostatMode == 'heating_off') thermostatMode = 'off';
+        if (thermostatMode == 'heating_on') {
+          thermostatMode = 'on';
+        } else if (thermostatMode == 'heating_off') thermostatMode = 'off';
         // 'manual' maps directly to 'manual'
 
         // Check if thermostatProvider and its thermostat are available before updating
-        if (thermostatProvider != null && thermostatProvider.thermostat != null) {
+        if (thermostatProvider.thermostat != null) {
           thermostatProvider.updateMode(thermostatMode);
           thermostatProvider.updateTemperature(activeEntry.targetTemperature);
-          print('Applying schedule: Mode: ${activeEntry.mode}, Temp: ${activeEntry.targetTemperature}');
+          print(
+              'Applying schedule: Mode: ${activeEntry.mode}, Temp: ${activeEntry.targetTemperature}');
         } else {
-          print('Thermostat provider or thermostat not available, cannot apply schedule.');
+          print(
+              'Thermostat provider or thermostat not available, cannot apply schedule.');
         }
       } else {
         // If no schedule is active, should we revert to a default mode or leave the current setting?
@@ -283,4 +304,4 @@ class ScheduleProvider with ChangeNotifier {
   }
 
   Timer? _timer; // Timer instance
-} 
+}

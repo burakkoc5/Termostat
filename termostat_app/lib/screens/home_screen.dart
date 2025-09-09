@@ -22,14 +22,15 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final PageController _pageController = PageController(initialPage: 1);
-  final ThermostatGeofenceService _geofenceService = ThermostatGeofenceService();
+  final ThermostatGeofenceService _geofenceService =
+      ThermostatGeofenceService();
 
   @override
   void initState() {
     super.initState();
     _initializeData();
     _startGeofence();
-    
+
     // Listen to settings changes to update geofence
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final settings = Provider.of<SettingsProvider>(context, listen: false);
@@ -60,13 +61,12 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-
-
   @override
   void dispose() {
     Provider.of<ThermostatProvider>(context, listen: false).stopListening();
     Provider.of<ScheduleProvider>(context, listen: false).stopScheduleChecker();
-    Provider.of<SettingsProvider>(context, listen: false).removeListener(_onSettingsChanged);
+    Provider.of<SettingsProvider>(context, listen: false)
+        .removeListener(_onSettingsChanged);
     _geofenceService.stop();
     _pageController.dispose();
     super.dispose();
@@ -93,7 +93,7 @@ class _HomeScreenState extends State<HomeScreen> {
           const ThermostatLogScreen(),
           SingleChildScrollView(
             child: Padding(
-              padding: EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 0.0),
+              padding: const EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 0.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
@@ -104,7 +104,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       }
 
                       if (thermostat.error != null) {
-                        return Center(child: Text('Error: ${thermostat.error}'));
+                        return Center(
+                            child: Text('Error: ${thermostat.error}'));
                       }
 
                       if (settings.error != null) {
@@ -112,7 +113,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       }
 
                       if (thermostat.thermostat == null) {
-                        return const Center(child: Text('No thermostat connected'));
+                        return const Center(
+                            child: Text('No thermostat connected'));
                       }
 
                       return Column(
@@ -121,7 +123,8 @@ class _HomeScreenState extends State<HomeScreen> {
                           Card(
                             elevation: 4,
                             child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 12.0),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12.0, vertical: 12.0),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.stretch,
                                 children: [
@@ -129,31 +132,49 @@ class _HomeScreenState extends State<HomeScreen> {
                                     child: IntrinsicHeight(
                                       child: Row(
                                         mainAxisSize: MainAxisSize.min,
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
                                           Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
                                             children: [
                                               Text(
                                                 'Temperature',
-                                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                                  fontSize: 18,
-                                                  fontWeight: FontWeight.w700,
-                                                ),
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .bodyMedium
+                                                    ?.copyWith(
+                                                      fontSize: 18,
+                                                      fontWeight:
+                                                          FontWeight.w700,
+                                                    ),
                                               ),
                                               const SizedBox(height: 2),
                                               Row(
-                                                crossAxisAlignment: CrossAxisAlignment.center,
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.center,
                                                 children: [
-                                                  Icon(Icons.thermostat, size: 28, color: Theme.of(context).colorScheme.primary),
+                                                  Icon(Icons.thermostat,
+                                                      size: 28,
+                                                      color: Theme.of(context)
+                                                          .colorScheme
+                                                          .primary),
                                                   const SizedBox(width: 6),
                                                   Text(
-                                                    thermostat.thermostat!.currentTemperature.toStringAsFixed(1) + '°C',
-                                                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                                                      color: Theme.of(context).colorScheme.primary,
-                                                      fontWeight: FontWeight.w700,
-                                                      fontSize: 32,
-                                                    ),
+                                                    '${thermostat.thermostat!.currentTemperature.toStringAsFixed(1)}°C',
+                                                    style: Theme.of(context)
+                                                        .textTheme
+                                                        .headlineMedium
+                                                        ?.copyWith(
+                                                          color:
+                                                              Theme.of(context)
+                                                                  .colorScheme
+                                                                  .primary,
+                                                          fontWeight:
+                                                              FontWeight.w700,
+                                                          fontSize: 32,
+                                                        ),
                                                   ),
                                                 ],
                                               ),
@@ -161,40 +182,71 @@ class _HomeScreenState extends State<HomeScreen> {
                                           ),
                                           const SizedBox(width: 40),
                                           Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
                                             children: [
                                               Text(
                                                 'Humidity',
-                                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                                  fontSize: 18,
-                                                  fontWeight: FontWeight.w700,
-                                                ),
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .bodyMedium
+                                                    ?.copyWith(
+                                                      fontSize: 18,
+                                                      fontWeight:
+                                                          FontWeight.w700,
+                                                    ),
                                               ),
                                               const SizedBox(height: 2),
                                               Row(
-                                                crossAxisAlignment: CrossAxisAlignment.center,
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.center,
                                                 children: [
-                                                  Icon(Icons.water_drop, size: 28, color: Theme.of(context).colorScheme.primary),
+                                                  Icon(Icons.water_drop,
+                                                      size: 28,
+                                                      color: Theme.of(context)
+                                                          .colorScheme
+                                                          .primary),
                                                   const SizedBox(width: 6),
                                                   Text(
-                                                    thermostat.thermostat!.humidity.toStringAsFixed(1) + '%',
-                                                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                                                      color: Theme.of(context).colorScheme.primary,
-                                                      fontWeight: FontWeight.w700,
-                                                      fontSize: 32,
-                                                    ),
+                                                    '${thermostat.thermostat!.humidity.toStringAsFixed(1)}%',
+                                                    style: Theme.of(context)
+                                                        .textTheme
+                                                        .headlineMedium
+                                                        ?.copyWith(
+                                                          color:
+                                                              Theme.of(context)
+                                                                  .colorScheme
+                                                                  .primary,
+                                                          fontWeight:
+                                                              FontWeight.w700,
+                                                          fontSize: 32,
+                                                        ),
                                                   ),
                                                 ],
                                               ),
                                               Builder(
                                                 builder: (context) {
-                                                  final humidity = thermostat.thermostat!.humidity;
+                                                  final humidity = thermostat
+                                                      .thermostat!.humidity;
                                                   if (humidity < 40) {
-                                                    return Text('Low', style: TextStyle(color: Colors.orange, fontSize: 12));
+                                                    return const Text('Low',
+                                                        style: TextStyle(
+                                                            color:
+                                                                Colors.orange,
+                                                            fontSize: 12));
                                                   } else if (humidity > 60) {
-                                                    return Text('High', style: TextStyle(color: Colors.blue, fontSize: 12));
+                                                    return const Text('High',
+                                                        style: TextStyle(
+                                                            color: Colors.blue,
+                                                            fontSize: 12));
                                                   } else {
-                                                    return Text('Normal', style: TextStyle(color: Colors.green, fontSize: 12, fontWeight: FontWeight.bold));
+                                                    return const Text('Normal',
+                                                        style: TextStyle(
+                                                            color: Colors.green,
+                                                            fontSize: 12,
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .bold));
                                                   }
                                                 },
                                               ),
@@ -207,7 +259,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                   const SizedBox(height: 10),
                                   Text(
                                     'Target Temperature',
-                                    style: Theme.of(context).textTheme.titleMedium,
+                                    style:
+                                        Theme.of(context).textTheme.titleMedium,
                                     textAlign: TextAlign.center,
                                   ),
                                   const SizedBox(height: 6),
@@ -215,24 +268,41 @@ class _HomeScreenState extends State<HomeScreen> {
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
                                       IconButton(
-                                        icon: const Icon(Icons.remove_circle_outline),
+                                        icon: const Icon(
+                                            Icons.remove_circle_outline),
                                         onPressed: () {
-                                          if (thermostat.thermostat!.targetTemperature > 10.0) {
-                                            thermostat.updateTemperature(thermostat.thermostat!.targetTemperature - 0.5);
+                                          if (thermostat.thermostat!
+                                                  .targetTemperature >
+                                              10.0) {
+                                            thermostat.updateTemperature(
+                                                thermostat.thermostat!
+                                                        .targetTemperature -
+                                                    0.5);
                                           }
                                         },
                                       ),
                                       Text(
-                                        thermostat.thermostat!.targetTemperature.toStringAsFixed(1) + '°C',
-                                        style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                                          color: Theme.of(context).colorScheme.secondary,
-                                        ),
+                                        '${thermostat.thermostat!.targetTemperature.toStringAsFixed(1)}°C',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .displayMedium
+                                            ?.copyWith(
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .secondary,
+                                            ),
                                       ),
                                       IconButton(
-                                        icon: const Icon(Icons.add_circle_outline),
+                                        icon: const Icon(
+                                            Icons.add_circle_outline),
                                         onPressed: () {
-                                          if (thermostat.thermostat!.targetTemperature < 30.0) {
-                                            thermostat.updateTemperature(thermostat.thermostat!.targetTemperature + 0.5);
+                                          if (thermostat.thermostat!
+                                                  .targetTemperature <
+                                              30.0) {
+                                            thermostat.updateTemperature(
+                                                thermostat.thermostat!
+                                                        .targetTemperature +
+                                                    0.5);
                                           }
                                         },
                                       ),
@@ -240,11 +310,15 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ),
                                   const SizedBox(height: 8),
                                   Slider(
-                                    value: thermostat.thermostat!.targetTemperature,
+                                    value: thermostat
+                                        .thermostat!.targetTemperature,
                                     min: 10.0,
                                     max: 30.0,
                                     divisions: 40,
-                                    label: thermostat.thermostat!.targetTemperature.round().toString(),
+                                    label: thermostat
+                                        .thermostat!.targetTemperature
+                                        .round()
+                                        .toString(),
                                     onChanged: thermostat.updateTemperature,
                                   ),
                                 ],
@@ -267,13 +341,14 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
           ),
-          ScheduleListScreen(),
+          const ScheduleListScreen(),
         ],
       ),
     );
   }
 
-  Future<void> _showAddEntryDialog(BuildContext context, Schedule schedule) async {
+  Future<void> _showAddEntryDialog(
+      BuildContext context, Schedule schedule) async {
     final formKey = GlobalKey<FormState>();
     int selectedDay = 1;
     TimeOfDay startTime = TimeOfDay.now();
@@ -438,4 +513,4 @@ class _HomeScreenState extends State<HomeScreen> {
     final localizations = MaterialLocalizations.of(context);
     return localizations.formatTimeOfDay(time);
   }
-} 
+}

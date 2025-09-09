@@ -20,8 +20,10 @@ class Schedule {
     List<ScheduleEntry> entriesList = [];
     if (entriesRaw is List) {
       entriesList = entriesRaw
-          .where((e) => e is Map)
-          .map((e) => ScheduleEntry.fromJson(Map<String, dynamic>.from(e as Map), parentScheduleId: scheduleId))
+          .whereType<Map>()
+          .map((e) => ScheduleEntry.fromJson(
+              Map<String, dynamic>.from(e as Map),
+              parentScheduleId: scheduleId))
           .toList();
     } else {
       // Optionally log or handle the unexpected type
@@ -69,7 +71,8 @@ class ScheduleEntry {
   final String scheduleId; // Link back to the parent schedule
   final bool isEnabled; // Whether this specific entry is enabled
   final String repeat; // 'once', 'weekly', 'daily'
-  final List<String> excludedDates; // Dates when this recurring entry is excluded (YYYY-MM-DD)
+  final List<String>
+      excludedDates; // Dates when this recurring entry is excluded (YYYY-MM-DD)
   final String? specificDate; // For 'once' entries: YYYY-MM-DD
 
   ScheduleEntry({
@@ -86,7 +89,8 @@ class ScheduleEntry {
     this.specificDate, // specificDate is optional
   });
 
-  factory ScheduleEntry.fromJson(Map<String, dynamic> json, {String? parentScheduleId}) {
+  factory ScheduleEntry.fromJson(Map<String, dynamic> json,
+      {String? parentScheduleId}) {
     return ScheduleEntry(
       id: json['id'] as String,
       dayOfWeek: json['dayOfWeek'] as int,
@@ -98,12 +102,14 @@ class ScheduleEntry {
         hour: json['endTimeHour'] as int,
         minute: json['endTimeMinute'] as int,
       ),
-      targetTemperature: (json['targetTemperature'] as num?)?.toDouble() ?? 20.0,
+      targetTemperature:
+          (json['targetTemperature'] as num?)?.toDouble() ?? 20.0,
       mode: json['mode'] as String? ?? 'heat',
       scheduleId: parentScheduleId ?? json['scheduleId'] as String? ?? '',
       isEnabled: json['isEnabled'] as bool? ?? true,
       repeat: json['repeat'] as String? ?? 'once',
-      excludedDates: List<String>.from(json['excludedDates'] as List? ?? []), // Read excludedDates
+      excludedDates: List<String>.from(
+          json['excludedDates'] as List? ?? []), // Read excludedDates
       specificDate: json['specificDate'] as String?, // Read specificDate
     );
   }
@@ -153,4 +159,4 @@ class ScheduleEntry {
       specificDate: specificDate ?? this.specificDate,
     );
   }
-} 
+}

@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:geolocator/geolocator.dart';
 import '../providers/settings_provider.dart';
-import '../constants/app_constants.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 
-  static void _showLocationPicker(BuildContext context, SettingsProvider settings) async {
+  static void _showLocationPicker(
+      BuildContext context, SettingsProvider settings) async {
     // Check location permissions
     LocationPermission permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
@@ -23,7 +23,8 @@ class SettingsScreen extends StatelessWidget {
     if (permission == LocationPermission.deniedForever) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Location permissions are permanently denied, we cannot request permissions.'),
+          content: Text(
+              'Location permissions are permanently denied, we cannot request permissions.'),
         ),
       );
       return;
@@ -74,7 +75,7 @@ class SettingsScreen extends StatelessWidget {
       if (Navigator.of(context).canPop()) {
         Navigator.of(context).pop();
       }
-      
+
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -163,4 +164,4 @@ class SettingsScreen extends StatelessWidget {
       ),
     );
   }
-} 
+}
