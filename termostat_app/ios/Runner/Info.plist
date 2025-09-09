@@ -45,5 +45,11 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Uygulama konumunuza erişerek size yakın cihazları gösterir</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>Uygulama arka planda da konumunuzu kullanarak geofence işlevini sağlar</string>
+
+
 </dict>
 </plist>

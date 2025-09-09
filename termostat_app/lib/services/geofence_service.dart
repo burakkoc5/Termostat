@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
 import 'package:geofence_service/geofence_service.dart';
 import '../providers/thermostat_provider.dart';
 import '../providers/settings_provider.dart';
 import '../constants/app_constants.dart';
 import 'notifications_service.dart';
+import 'package:geolocator/geolocator.dart' as geolocator;
 
 class ThermostatGeofenceService {
   static final ThermostatGeofenceService _instance =
@@ -26,8 +28,34 @@ class ThermostatGeofenceService {
   bool _isInitialized = false;
 
   /// Initialize the geofence service
+
   Future<void> initialize(BuildContext context) async {
     if (_isInitialized) return;
+
+    // --- Konum izni kontrol ---
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      debugPrint('Konum servisi kapalı!');
+      return;
+    }
+
+    geolocator.LocationPermission permission =
+        await Geolocator.checkPermission();
+    if (permission == geolocator.LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == geolocator.LocationPermission.denied) {
+        debugPrint('Konum izni reddedildi');
+        return;
+      }
+    }
+
+    if (permission == geolocator.LocationPermission.deniedForever) {
+      debugPrint(
+        'Konum izni kalıcı olarak reddedildi, ayarlardan manuel izin verin',
+      );
+      return;
+    }
+    // --- İzin kontrolü bitti ---
 
     try {
       final settings = Provider.of<SettingsProvider>(context, listen: false);
@@ -37,7 +65,10 @@ class ThermostatGeofenceService {
           latitude: settings.homeLatitude,
           longitude: settings.homeLongitude,
           radius: [
-            GeofenceRadius(id: 'radius_200m', length: settings.homeRadiusMeters)
+            GeofenceRadius(
+              id: 'radius_200m',
+              length: settings.homeRadiusMeters,
+            ),
           ],
         ),
       );
@@ -52,8 +83,12 @@ class ThermostatGeofenceService {
     if (_isStarted || !_isInitialized) return;
 
     try {
-      _geofenceService.addGeofenceStatusChangeListener((Geofence geofence,
-          GeofenceRadius radius, GeofenceStatus status, location) async {
+      _geofenceService.addGeofenceStatusChangeListener((
+        Geofence geofence,
+        GeofenceRadius radius,
+        GeofenceStatus status,
+        location,
+      ) async {
         if (geofence.id == 'home') {
           await _handleGeofenceStatusChange(context, status);
         }
@@ -70,7 +105,9 @@ class ThermostatGeofenceService {
 
   /// Handle geofence status changes
   Future<void> _handleGeofenceStatusChange(
-      BuildContext context, GeofenceStatus status) async {
+    BuildContext context,
+    GeofenceStatus status,
+  ) async {
     try {
       if (status == GeofenceStatus.ENTER) {
         await _handleEnterHome(context);
@@ -91,8 +128,10 @@ class ThermostatGeofenceService {
     );
 
     if (context.mounted) {
-      final thermostat =
-          Provider.of<ThermostatProvider>(context, listen: false);
+      final thermostat = Provider.of<ThermostatProvider>(
+        context,
+        listen: false,
+      );
       if (thermostat.thermostat != null) {
         thermostat.updateTemperature(25.0);
         thermostat.updateMode('on');
@@ -110,8 +149,10 @@ class ThermostatGeofenceService {
     );
 
     if (context.mounted) {
-      final thermostat =
-          Provider.of<ThermostatProvider>(context, listen: false);
+      final thermostat = Provider.of<ThermostatProvider>(
+        context,
+        listen: false,
+      );
       if (thermostat.thermostat != null) {
         thermostat.updateTemperature(18.0);
         thermostat.updateMode('off');
@@ -133,7 +174,8 @@ class ThermostatGeofenceService {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text(
-                'Geofence settings updated. Restart app to apply changes.'),
+              'Geofence settings updated. Restart app to apply changes.',
+            ),
             duration: Duration(seconds: 3),
           ),
         );
