@@ -75,7 +75,8 @@ class _ScheduleEntryScreenState extends State<ScheduleEntryScreen> {
                         IconButton(
                           icon: const Icon(Icons.delete),
                           tooltip: 'Delete Entry',
-                          onPressed: () => _showDeleteConfirmation(context, entry),
+                          onPressed: () =>
+                              _showDeleteConfirmation(context, entry),
                         ),
                       ],
                     ),
@@ -106,7 +107,7 @@ class _ScheduleEntryScreenState extends State<ScheduleEntryScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   DropdownButtonFormField<int>(
-                    value: selectedDay,
+                    initialValue: selectedDay,
                     decoration: const InputDecoration(
                       labelText: 'Day of Week',
                     ),
@@ -173,7 +174,7 @@ class _ScheduleEntryScreenState extends State<ScheduleEntryScreen> {
                   ),
                   const SizedBox(height: 16),
                   DropdownButtonFormField<String>(
-                    value: selectedMode,
+                    initialValue: selectedMode,
                     decoration: const InputDecoration(
                       labelText: 'Mode',
                     ),
@@ -209,17 +210,21 @@ class _ScheduleEntryScreenState extends State<ScheduleEntryScreen> {
                     mode: selectedMode,
                   );
 
-                  final entryIndex = widget.schedule.entries.indexWhere((e) => e.id == entry.id);
+                  final entryIndex = widget.schedule.entries
+                      .indexWhere((e) => e.id == entry.id);
 
                   if (entryIndex != -1) {
-                    final List<ScheduleEntry> updatedEntries = List<ScheduleEntry>.from(widget.schedule.entries);
+                    final List<ScheduleEntry> updatedEntries =
+                        List<ScheduleEntry>.from(widget.schedule.entries);
                     updatedEntries[entryIndex] = updatedEntry;
 
                     final updatedSchedule = widget.schedule.copyWith(
                       entries: updatedEntries,
                     );
 
-                    context.read<ScheduleProvider>().updateSchedule(updatedSchedule);
+                    context
+                        .read<ScheduleProvider>()
+                        .updateSchedule(updatedSchedule);
                   }
 
                   Navigator.pop(context);
@@ -253,7 +258,7 @@ class _ScheduleEntryScreenState extends State<ScheduleEntryScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   DropdownButtonFormField<int>(
-                    value: selectedDay,
+                    initialValue: selectedDay,
                     decoration: const InputDecoration(
                       labelText: 'Day of Week',
                     ),
@@ -320,7 +325,7 @@ class _ScheduleEntryScreenState extends State<ScheduleEntryScreen> {
                   ),
                   const SizedBox(height: 16),
                   DropdownButtonFormField<String>(
-                    value: selectedMode,
+                    initialValue: selectedMode,
                     decoration: const InputDecoration(
                       labelText: 'Mode',
                     ),
@@ -362,7 +367,9 @@ class _ScheduleEntryScreenState extends State<ScheduleEntryScreen> {
                     entries: [...widget.schedule.entries, entry],
                   );
 
-                  context.read<ScheduleProvider>().updateSchedule(updatedSchedule);
+                  context
+                      .read<ScheduleProvider>()
+                      .updateSchedule(updatedSchedule);
                   Navigator.pop(context);
                 }
               },
@@ -374,7 +381,8 @@ class _ScheduleEntryScreenState extends State<ScheduleEntryScreen> {
     );
   }
 
-  Future<void> _showDeleteConfirmation(BuildContext context, ScheduleEntry entry) async {
+  Future<void> _showDeleteConfirmation(
+      BuildContext context, ScheduleEntry entry) async {
     return showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -439,4 +447,4 @@ class _ScheduleEntryScreenState extends State<ScheduleEntryScreen> {
     final minute = time.minute.toString().padLeft(2, '0');
     return '$hour:$minute';
   }
-} 
+}
